@@ -1,0 +1,109 @@
+# name: ParticleGun.mac
+# date: 3/20/2024
+# author: Arthur Zangi
+# email: szangi@mit.edu
+#
+#Particle Gun Sources generally have to be defined by the user
+#through the command line interface, so we provide a macro here
+#to initialize it once to some default values which can be changed
+#from the command line later.
+#
+/run/initialize
+#
+/gps/verbose 0
+#
+# Cylindrical particle source matching the shape of the detector
+/gps/pos/type Plane
+/gps/pos/shape Square
+/gps/pos/centre -4 0 0.76 m
+#/gps/pos/centre -1 0 0.1 m
+/gps/pos/halfx 2.5 cm
+/gps/pos/halfy 2.5 cm
+#/gps/position -4 0 1 m
+#/gps/direction 1 0 0
+
+/gps/ang/rot1 -1 0 1.367
+/gps/ang/rot2 0 1 0
+/gps/ang/sigma_r 1 deg
+/gps/ang/type beam2d
+
+# particle definition
+/gps/particle alpha 
+/beamTest/field/field1/value -1.77 kilogauss
+/beamTest/field/field2/value -2.0 kilogauss
+#
+## set the energy definition
+/gps/ene/type Gauss
+/gps/ene/mono 2.2 MeV
+/gps/ene/sigma 0.0707 MeV 
+#
+
+/score/create/realWorldLogVol detectorLogical
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/realWorldLogVol ERSdetectLogic
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/realWorldLogVol FaradaydetectLogic
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/realWorldLogVol doseCupLogical
+/score/quantity/volumeFlux volFlux
+/score/filter/particle aFilter alpha
+/score/close
+
+#/score/create/cylinderMesh cylMesh
+#/score/mesh/cylinderSize 40 10 cm
+#/score/mesh/nBin 3 2 20
+#/score/mesh/translate/xyz 223 0 -76 cm
+#/score/mesh/rotate/rotateX 90 deg
+#/score/quantity/volumeFlux nFlux
+#/score/filter/particle nFilter neutron
+#/score/close
+
+/score/create/boxMesh bxMesh
+/score/mesh/boxSize 4.35 1 2.25 m
+/score/mesh/nBin 100 1 50
+/score/mesh/translate/xyz 0 0 100 cm
+/score/quantity/cellFlux nFlux
+/score/filter/particle nFliter neutron
+/score/close
+
+
+
+
+#/analysis/h1/create nFlux detect_nFlux 100 0.01 5. MeV ! linear
+/score/fill1D 0 detectorLogical nFlux
+/score/fill1D 1 ERSdetectLogic nFlux
+/score/fill1D 2 FaradaydetectLogic nFlux
+/analysis/openFile WriteT.root
+
+/run/beamOn 1000000
+#/run/beamOn 7
+#/run/beamOn 10
+
+#/control/loop drawBox.mac iColumn 0 90 10
+/vis/scene/create
+/vis/open OGL
+/vis/viewer/set/viewpointVector 1 2 1
+/score/drawProjection bxMesh nFlux
+
+#/vis/scene/create
+#/vis/open TSG
+#/vis/plot h1 0
+/analysis/write
+/analysis/closeFile
+
+/score/dumpQuantityToFile bxMesh nFlux MeshDumpTest.csv
+/score/dumpQuantityToFile doseCupLogical volFlux alphas.csv
+
+#/run/beamOn 1000000

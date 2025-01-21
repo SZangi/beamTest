@@ -1,0 +1,57 @@
+# name: ParticleGun.mac
+# date: 3/20/2024
+# author: Arthur Zangi
+# email: szangi@mit.edu
+#
+/run/initialize
+#
+/gps/verbose 0
+#
+# Cylindrical particle source matching the shape of the dose cup
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 2.22 0 -.77 m
+/gps/pos/radius 2.5 cm
+/gps/ang/type iso
+
+# particle definition
+/gps/particle neutron 
+#
+## set the energy definition
+/gps/ene/mono 4.4 MeV
+#
+/score/create/realWorldLogVol detectorLogical
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/realWorldLogVol ERSdetectLogic
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/realWorldLogVol FaradaydetectLogic
+/score/quantity/volumeFlux volFlux 
+/score/quantity/volumeFlux nFlux 
+/score/filter/particle nFilter neutron
+/score/close
+
+/score/create/boxMesh bxMesh
+/score/mesh/boxSize 4.35 1 2.25 m
+/score/mesh/nBin 100 1 50
+/score/quantity/volumeFlux nFlux
+/score/filter/particle nFliter neutron
+/score/close
+
+#/vis/filtering/trajectories/particleFilter-0/reset
+/score/fill1D 0 detectorLogical nFlux
+/score/fill1D 1 ERSdetectLogic nFlux
+/score/fill1D 2 FaradaydetectLogic nFlux
+
+/run/beamOn 100000
+#/run/beamOn 10000
+#/run/beamOn 10
+
+/score/dumpQuantityToFile bxMesh nFlux MeshDumpTestNeut.csv
