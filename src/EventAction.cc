@@ -42,56 +42,61 @@ EventAction::EventAction(runAction *currentRun)
 
 void EventAction::BeginOfEventAction(const G4Event*)
 {
-  for (int i = 0; i < HC_names.size();i++){
-    if (HC_ID_vec[i] == -1){
-        auto sdManager = G4SDManager::GetSDMpointer();
-        G4String HC_name = HC_names[i] + "/ScintillatorHC";
-        HC_ID_vec[i] = sdManager->GetCollectionID(HC_name);
-    }
-    }
+  if (NumHC >0){
+    for (int i = 0; i < HC_names.size();i++){
+      if (HC_ID_vec[i] == -1){
+          auto sdManager = G4SDManager::GetSDMpointer();
+          G4String HC_name = HC_names[i] + "/ScintillatorHC"+G4String(std::to_string(i+1));
+          HC_ID_vec[i] = sdManager->GetCollectionID(HC_name);
+      }
+      }
 
-  for (int i = 0; i <HistIDs.size();i++){
-    if(HistIDs[i] == -1){
-      auto analysisManager = G4AnalysisManager::Instance();
-      HistIDs[i] = analysisManager->GetH1Id(Hist_names[i]);
-      G4cout<<"HistID Set"<<G4endl;
+    for (int i = 0; i <HistIDs.size();i++){
+      if(HistIDs[i] == -1){
+        auto analysisManager = G4AnalysisManager::Instance();
+        HistIDs[i] = analysisManager->GetH1Id(Hist_names[i]);
+        G4cout<<"HistID Set"<<G4endl;
+      }
     }
   }
-  
 }
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
-  auto analysisManager = G4AnalysisManager::Instance();
-
+  //auto analysisManager = G4AnalysisManager::Instance();
+  if (NumHC >0){
+  G4int nhit = 0;
+  G4float totEneDep = 0;
+  G4float Ene = 0;
+  ScintillatorHitsCollection* hc = new ScintillatorHitsCollection;
   for (int j = 0; j < HC_ID_vec.size();j++){
-    G4double totEneDep = 0;
-      auto hc = GetHC(event, HC_ID_vec[j]);
-      if ( ! hc ) return;
-      auto nhit = hc->GetSize();
-      if (j < 3){
-        for (unsigned long i = 0; i < nhit; ++i) {
-          auto hit = static_cast<ScintillatorHit*>(hc->GetHit(i));
-          EneDep_vec[j] = hit->GetEnergyDep();
-          //G4cout <<"Energy deposited "<<EneDep/keV<<G4endl;
-          rnAction->AddEDep(EneDep_vec[j],j);
-          totEneDep += EneDep_vec[j];
-          //G4cout <<"Total Energy deposited "<<totEneDep/keV<<G4endl;
-        }
-      
-        if (totEneDep > 100*keV) rnAction->AddHit(j);
-        }
-      else{
-        if (nhit > 0){
-          G4double Ene = 0;
-          // only care about first hit per event
-          auto hit = static_cast<ScintillatorHit*>(hc->GetHit(0));
-          Ene = hit->GetEnergy()*MeV;
-          //G4cout <<"Hit Energy: "<<Ene<<G4endl;
-          //if(Ene> 0 *keV) analysisManager->FillH1(HistIDs[j-3],Ene);
-        }
-
+    totEneDep = 0;
+    hc = dynamic_cast<ScintillatorHitsCollection*>(GetHC(event, HC_ID_vec[j]));
+    if ( ! hc ) return;
+      nhit = hc->entries();
+    if (j < 3){
+      for (unsigned long i = 0; i < nhit; ++i) {
+        //auto hit = dynamic_cast<ScintillatorHit*>(hc->GetHit(i));
+        //EneDep_vec[j] = (*hc)[i]->GetEnergyDep();
+        //delete hit;
+        EneDep_vec[j] = (*hc)[i]->GetEnergyDep();
+        rnAction->AddEDep(EneDep_vec[j],j);
+        totEneDep += EneDep_vec[j];
       }
+    
+      if (totEneDep > 100*keV) rnAction->AddHit(j);
+    }
+    else{
+      if (nhit > 0){
+        Ene = 0;
+        // only care about first hit per event
+        //auto hit = dynamic_cast<ScintillatorHit*>(hc->GetHit(0));
+        Ene = (*hc)[0]->GetEnergy();
+        //Ene = hit->GetEnergy()*MeV;
+        //delete hit;
       }
+    }
+  }
+}
 }
 

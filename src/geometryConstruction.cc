@@ -105,8 +105,8 @@ G4double Linac_Height = Linac_Width;
 G4double Linac_Cent_Side1 = 1.83*m;
 G4double Linac_Cent_Side2 = 1.41*m;
 
-G4double Linac_tunnel_width = 5.*cm;
-G4double Linac_tunnel_final = 4.19469*cm;
+G4double Linac_tunnel_width = 7.*cm;
+G4double Linac_tunnel_final = 3.9*cm;
 
 G4double SM_width = 21.8*cm;
 G4double SM_out_rad = 1.16*m + SM_width/2;
@@ -625,21 +625,21 @@ G4String Faraday_SDname = "/scintillator3";
 
 G4String Dosimeter_SDname = "/dosimeter1";
 
-auto scintillator = new ScintillatorSD(SDname,"ScintillatorHC");
-sdManager->AddNewDetector(scintillator);
-SetSensitiveDetector("detectorLogical",scintillator, false);
+//auto scintillator = new ScintillatorSD(SDname,"ScintillatorHC1");
+//sdManager->AddNewDetector(scintillator);
+//SetSensitiveDetector("detectorLogical",scintillator, false);
 
-auto ERSscintillator = new ScintillatorSD(ERS_SDname,"ScintillatorHC");
-sdManager->AddNewDetector(ERSscintillator);
-SetSensitiveDetector("ERSdetectLogic",ERSscintillator, false);
+//auto ERSscintillator = new ScintillatorSD(ERS_SDname,"ScintillatorHC2");
+//sdManager->AddNewDetector(ERSscintillator);
+//SetSensitiveDetector("ERSdetectLogic",ERSscintillator, false);
 
-auto Faradayscintillator = new ScintillatorSD(Faraday_SDname,"ScintillatorHC");
-sdManager->AddNewDetector(Faradayscintillator);
-SetSensitiveDetector("FaradaydetectLogic",Faradayscintillator, false);
+//auto Faradayscintillator = new ScintillatorSD(Faraday_SDname,"ScintillatorHC3");
+//sdManager->AddNewDetector(Faradayscintillator);
+//SetSensitiveDetector("FaradaydetectLogic",Faradayscintillator, false);
 
-auto dosimeter = new ScintillatorSD(Dosimeter_SDname,"ScintillatorHC");
-sdManager->AddNewDetector(dosimeter);
-SetSensitiveDetector("dosimeterLogical",dosimeter, false);
+//auto dosimeter = new ScintillatorSD(Dosimeter_SDname,"ScintillatorHC4");
+//sdManager->AddNewDetector(dosimeter);
+//SetSensitiveDetector("dosimeterLogical",dosimeter, false);
 
 
 // magnetic field for first cylinder --------------------------------------------

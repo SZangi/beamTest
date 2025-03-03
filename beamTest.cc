@@ -11,6 +11,7 @@ field strength into a target
 
 // G4 Header Files
 #include "G4RunManager.hh" 
+#include "G4RunManagerFactory.hh"
 #include "G4VisExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4UIExecutive.hh"
@@ -38,11 +39,15 @@ field strength into a target
 #include "PhysicsList.hh"
 #include "runAction.hh"
 #include "EventAction.hh"
+#include "ActionInitialization.hh"
+
+#include "FancyNeutronPhysics.hh"
 
 int main(int argc, char *argv[])
 {
   // Create a runManager to handle the flow of operations in the program.  
-  G4RunManager* runManager = new G4RunManager;
+  G4RunManager* runManager =  G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
+  // G4RunManager* runManager = new G4RunManager;
 
   // Activate command-based scorer
   G4ScoringManager::GetScoringManager();
@@ -62,9 +67,16 @@ int main(int argc, char *argv[])
     G4GenericBiasingPhysics* biasingPhysics = new G4GenericBiasingPhysics();
     biasingPhysics -> Bias("alpha");
     physicsList->RegisterPhysics(biasingPhysics);
+    physicsList->RegisterPhysics(new FancyNeutronPhysics());
 
   runManager -> SetUserInitialization(physicsList);
   
+  // Initialize the user actions in the action initialization class for multi-threading mode
+
+  runManager -> SetUserInitialization(new ActionInitialization());
+
+  /* These functions are now taken care of in the ActionInitialization class for multi-threading mode
+
   runManager -> SetUserAction(new PGA);
   
   // Create new "user defined" class objects and tell the runManager
@@ -74,7 +86,7 @@ int main(int argc, char *argv[])
   runManager->SetUserAction(rnAction);
 
   runManager->SetUserAction(new EventAction(rnAction));
-
+  */
   runManager -> Initialize();
   
   // If the shell variable for visualization use is set, then create a
@@ -105,7 +117,7 @@ int main(int argc, char *argv[])
     // "new".  This is good memory management
 
     delete UIExecutive;
-    delete UI;
+    //delete UI;
   }
   else{
     G4String command = "/control/execute ";
@@ -115,8 +127,8 @@ int main(int argc, char *argv[])
       }
     
     UI->ApplyCommand(command+fileName);
-    G4cout<< "Press Enter to continue"<<G4endl;
-    G4int go = cin.get();
+    //G4cout<< "Press Enter to continue"<<G4endl;
+    //G4int go = cin.get();
   }
 
   delete visManager;

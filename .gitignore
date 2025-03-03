@@ -3,3 +3,5 @@
 *.csv
 *.root
 *.png
+/build_g4_11_1_2
+CMakeLists.txt

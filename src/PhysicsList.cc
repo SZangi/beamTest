@@ -31,6 +31,8 @@
 
 #include "G4GenericBiasingPhysics.hh"
 
+#include "FancyNeutronPhysics.hh"
+
 // particles
 
 #include "G4BosonConstructor.hh"
@@ -81,6 +83,8 @@ PhysicsList::PhysicsList()
     G4GenericBiasingPhysics* biasingPhysics = new G4GenericBiasingPhysics();
     biasingPhysics -> Bias("alpha");
     RegisterPhysics(biasingPhysics);
+
+    //RegisterPhysics(new FancyNeutronPhysics());
 
 
 }

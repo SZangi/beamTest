@@ -50,7 +50,7 @@
 /score/fill1D 1 ERSdetectLogic nFlux
 /score/fill1D 2 FaradaydetectLogic nFlux
 
-/run/beamOn 100000
+#/run/beamOn 100000
 #/run/beamOn 10000
 #/run/beamOn 10
 

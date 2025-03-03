@@ -3,6 +3,7 @@
 
 #include "G4UserRunAction.hh"
 #include "G4Run.hh"
+#include "G4Accumulable.hh"
 
 #include <string>
 
@@ -19,10 +20,10 @@ class runAction : public G4UserRunAction
         void BeginOfRunAction(const G4Run*) override;
         void EndOfRunAction(const G4Run*) override;
 
-        void AddEDep(G4double edep, G4int i) {EnergyDeposited[i] += edep;};
+        void AddEDep(G4float edep, G4int i) {EnergyDeposited[i] += edep;};
         void AddHit(G4int i) {Hits[i] ++;};
 
-        vector<G4double> EnergyDeposited = {-1,-1,-1};
+        vector<G4float> EnergyDeposited = {-1,-1,-1};
         vector<G4int> Hits = {-1,-1,-1};
 
         vector<G4int> HistIds = {-1,-1,-1};
@@ -34,6 +35,11 @@ class runAction : public G4UserRunAction
         vector<G4String> Pos_Names = {"Dose Cup","ERS", "Corrector"};
 
         vector<G4double> dose = {-1,-1,-1};
+
+        G4AccValue<G4double> Faraday_dose = 0;
+        G4AccValue<G4double> ERS_dose = 0;
+        G4AccValue<G4double> Corrector_dose = 0;
+
 };
 
 #endif

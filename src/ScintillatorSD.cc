@@ -18,8 +18,10 @@ void ScintillatorSD::Initialize(G4HCofThisEvent* hce)
     HitsCollection
         = new ScintillatorHitsCollection(SensitiveDetectorName, collectionName[0]);
 
+    //GetCollectionID();
+
     G4int hcID
-        = G4SDManager::GetSDMpointer()->GetCollectionID(HitsCollection);
+        = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
     hce->AddHitsCollection(hcID, HitsCollection);
 }
 
