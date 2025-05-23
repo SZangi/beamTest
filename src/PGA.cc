@@ -24,11 +24,7 @@ PGA::PGA()
 
   // Get the definition of a deuteron & proton from the internal particle table
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleDefinition* deuteron = particleTable -> FindParticle("deuteron");
-  G4ParticleDefinition* proton = particleTable -> FindParticle("proton");
   G4ParticleDefinition* alpha = particleTable -> FindParticle("alpha");
-  G4ParticleDefinition* helium3 = particleTable -> FindParticle("He3");
-  G4ParticleDefinition* neutron = particleTable -> FindParticle("neutron");
   
   // Initialize the particle gun with some default values
   particleSource -> SetParticleDefinition(alpha);

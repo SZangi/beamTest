@@ -120,9 +120,7 @@ void PhysicsList::ConstructParticle()
 
 void PhysicsList::SetCuts()
 {
-//  SetCutValue(0*mm, "proton");
-// setting this value down will bring the neutron production closer to the expected
-// value but not quite there, still a little low.
+  SetCutValue(1*nm, "electron");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

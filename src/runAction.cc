@@ -3,7 +3,7 @@
 #include "G4Accumulable.hh"
 #include "G4AccumulableManager.hh"
 
-#include "G4AccValue.hh"
+//#include "G4AccValue.hh"
 
 #include "runAction.hh"
 #include "geometryConstruction.hh"
@@ -22,9 +22,9 @@ runAction::runAction()
     analysisManager->CreateH1("DosimeternFlux3", "Neutron Flux in Dose Meter", N_Energies);
 
     G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-    accumulableManager->Register(Faraday_dose);
-    accumulableManager->Register(ERS_dose);
-    accumulableManager->Register(Corrector_dose);
+    accumulableManager->RegisterAccumulable(Faraday_dose);
+    accumulableManager->RegisterAccumulable(ERS_dose);
+    accumulableManager->RegisterAccumulable(Corrector_dose);
     
     }
 
@@ -49,11 +49,11 @@ void runAction::EndOfRunAction(const G4Run* run)
         G4double Fin_Faraday_dose = Faraday_dose.GetValue();
         G4double Fin_ERS_dose = ERS_dose.GetValue();
         G4double Fin_Corrector_dose = Corrector_dose.GetValue();
-        G4cout<<"Total Dose at " << Pos_Names[0]<< " is "<< Fin_Faraday_dose/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
-        G4cout<<"Total Dose at " << Pos_Names[1]<< " is "<< Fin_ERS_dose/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
-        G4cout<<"Total Dose at " << Pos_Names[2]<< " is "<< Fin_Corrector_dose/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
-        G4cout << "Ratio of Dose Cup to ERS is: " << Fin_ERS_dose/Fin_Faraday_dose << G4endl
-        << "Ratio of Dose Cup to Correctors is: "<< Fin_Corrector_dose/Fin_Faraday_dose<< G4endl;
+        G4cout<<"Total Dose at " << Pos_Names[0]<< " is "<< Fin_Faraday_dose/10<< " nRem" << G4endl;
+        //G4cout<<"Total Dose at " << Pos_Names[1]<< " is "<< Fin_ERS_dose/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
+        //G4cout<<"Total Dose at " << Pos_Names[2]<< " is "<< Fin_Corrector_dose/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
+        //G4cout << "Ratio of Dose Cup to ERS is: " << Fin_ERS_dose/Fin_Faraday_dose << G4endl
+        //<< "Ratio of Dose Cup to Correctors is: "<< Fin_Corrector_dose/Fin_Faraday_dose<< G4endl;
     }
     else{
     /*
@@ -78,7 +78,7 @@ void runAction::EndOfRunAction(const G4Run* run)
         for (G4int i=1;i<num_bins; i++){
             sum += Histogram1D->bin_entries(i)*Conv_Fac[i-1];
             }
-         //G4cout<<"Total Dose at " << Pos_Names[j]<< " is "<< sum/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
+         //G4cout<<"Dose to hits ratio is " <<<< " is "<< sum/(2*4.5*2.54*6.3*2.54*2)/10<< " nRem" << G4endl;
         dose[j] = sum;
         }
     Faraday_dose = dose[0];

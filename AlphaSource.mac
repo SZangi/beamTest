@@ -1,0 +1,51 @@
+# name: ParticleGun.mac
+# date: 3/20/2024
+# author: Arthur Zangi
+# email: szangi@mit.edu
+#
+# Just set up the alpha source
+#
+/run/initialize
+/run/verbose 1
+#/tracking/verbose 1
+#
+/gps/verbose 0
+#
+# Cylindrical particle source matching the shape of the detector
+/gps/pos/type Plane
+/gps/pos/shape Square
+/gps/pos/centre -4 0 0.76 m
+#/gps/pos/centre -1 0 0.1 m
+/gps/pos/halfx 2.5 cm
+/gps/pos/halfy 2.5 cm
+#/gps/position -4 0 1 m
+#/gps/direction 1 0 0
+
+/gps/ang/rot1 -1 0 1.367
+/gps/ang/rot2 0 1 0
+/gps/ang/sigma_r 1 deg
+/gps/ang/type beam2d
+
+# particle definition
+#/gps/particle alpha 
+#/beamTest/field/field1/value -1.77 kilogauss
+#/beamTest/field/field2/value -1.85 kilogauss
+#
+## set the energy definition
+#/gps/ene/type Gauss
+/gps/ene/mono 3.5 MeV
+#/gps/ene/sigma 0.001 MeV 
+#
+
+/beamTest/field/field1/value -2.24 kilogauss #-1.77 kilogauss #-1.93 kilogauss #
+/beamTest/field/field2/value -2.4 kilogauss #-1.85 kilogauss #-2.0 kilogauss #
+#
+## set the energy definition
+/gps/ene/type Gauss
+#/gps/ene/mono 3.0 MeV
+/gps/ene/sigma 0.06 MeV 
+
+
+
+
+

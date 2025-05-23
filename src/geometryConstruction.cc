@@ -30,7 +30,7 @@
 #include "MagneticField.hh"
 #include "MagneticField2.hh"
 #include "ScintillatorSD.hh"
-#include "XSBiasing.hh"
+#include "MultiXSBiasing.hh"
 
 G4ThreadLocal MagneticField* geometryConstruction::fMagneticField = nullptr;
 G4ThreadLocal G4FieldManager* geometryConstruction::fFieldMgr = nullptr;
@@ -69,6 +69,7 @@ G4VPhysicalVolume *geometryConstruction::Construct()
   G4Element *C = new G4Element("Carbon", "C", z,a);
   G4Material *graphite = new G4Material("Carb", density,1);
   graphite -> AddElement(C, 100. *perCent);
+  
 
   G4Element *Fe = new G4Element("Iron","Fe", 26.,54.*g/mole);
   G4Element *O = new G4Element("Oxygen","O",8.,16.*g/mole);
@@ -86,7 +87,11 @@ G4VPhysicalVolume *geometryConstruction::Construct()
 
   G4Material* aluminum = nist->FindOrBuildMaterial("G4_Al");
 
+  G4Material* silicon = dopeSilicon();
+
   G4Material* concrete = nist->FindOrBuildMaterial("G4_CONCRETE");
+
+  G4Material* tungsten = nist->FindOrBuildSimpleMaterial(74);
 
 // Volumes //
 
@@ -105,8 +110,8 @@ G4double Linac_Height = Linac_Width;
 G4double Linac_Cent_Side1 = 1.83*m;
 G4double Linac_Cent_Side2 = 1.41*m;
 
-G4double Linac_tunnel_width = 7.*cm;
-G4double Linac_tunnel_final = 3.9*cm;
+G4double Linac_tunnel_width = 28.*cm;
+G4double Linac_tunnel_final = 4.18*cm;
 
 G4double SM_width = 21.8*cm;
 G4double SM_out_rad = 1.16*m + SM_width/2;
@@ -129,17 +134,20 @@ G4double ERS_Faraday_Height = 10*cm;
 G4double ERS_Faraday_Cent = 18.9*cm;
 
 G4double Target_Cham_Width = 1.26*m;
-G4double Target_Cham_Length = 1.28*m;
+G4double Target_Cham_Length = 1.1*m;
 G4double Target_Cham_Height = 1.2*m;
 
-G4double Target_Cham_Thickness = 1.7*cm;
+G4double Target_Cham_Thickness = 3*2.54*cm;
 
 G4double Target_Cent_Side1 = 2.0*m;
-G4double Target_Cent_Side2 = -20*cm;
+G4double Target_Cent_Side2 = -30*cm;
 
 G4double doseCupWidth = 20*cm;
-G4double doseCupLength = 2*cm;
+G4double doseCupLength = 0.5*cm;
 G4double doseCupHeight = 10*cm;
+
+G4cout<<"Dose Cup Z:" <<(Target_Cent_Side2-Target_Cham_Length/2+doseCupLength/2+4.5*cm+Target_Cham_Thickness)/cm<<G4endl;
+G4cout<<"Dose Cup X:" <<(Target_Cent_Side1+Target_Cham_Width/2-30*cm)/cm<<G4endl;
 
 // Volume Definitions //
     G4Box* hallSolid
@@ -172,7 +180,7 @@ G4double doseCupHeight = 10*cm;
         new G4Box("floorBox",World_Length/2, Floor_Height/2, World_Width/2);
 
     G4LogicalVolume* floorLogical
-        = new G4LogicalVolume(floorSolid, concrete,"floorLogical",
+        = new G4LogicalVolume(floorSolid, air,"floorLogical",
             0,
             0,
             0);
@@ -184,9 +192,9 @@ G4double doseCupHeight = 10*cm;
         0);
     
     G4Box* wallSolid = 
-        new G4Box("wallBox",World_Length/2,1.75*m,0.75*m);
+        new G4Box("wallBox",World_Length/2,1*m,0.25*m);
     G4LogicalVolume* wallLogical =
-        new G4LogicalVolume(wallSolid,concrete,"wallLogical",0,0,0);
+        new G4LogicalVolume(wallSolid,air,"wallLogical",0,0,0);
     new G4PVPlacement(0,G4ThreeVector(0,0,-2.25*m),
         wallLogical,
         "wallPhysical",
@@ -206,7 +214,7 @@ G4double doseCupHeight = 10*cm;
         new G4SubtractionSolid("linacS",linacShell,linacLiner,linerRotate,G4ThreeVector(0,0,0));
 
     G4LogicalVolume* linacLogical
-        = new G4LogicalVolume(linacSolid,carbon13,"linacLogical",
+        = new G4LogicalVolume(linacSolid,tungsten,"linacLogical",
         0,
         0,
         0);
@@ -261,7 +269,7 @@ G4double doseCupHeight = 10*cm;
     auto recieveSolid
         = new G4Box("recieveBox",ERS_Faraday_Length/2,ERS_Faraday_Height/2,ERS_Faraday_Width/2);
     G4LogicalVolume *recieveLogical
-        = new G4LogicalVolume(recieveSolid,carbon13,"recieveLogical");
+        = new G4LogicalVolume(recieveSolid,tungsten,"recieveLogical");
     G4VPhysicalVolume* recievePhysical 
             = new G4PVPlacement(0,G4ThreeVector(ERS_Faraday_Cent-ERS_Length/2,0*cm,0.*cm),
                                 recieveLogical,
@@ -505,12 +513,12 @@ G4double doseCupHeight = 10*cm;
                                                     0);
 
     G4Box* targetInner
-        = new G4Box("targetInner",Target_Cham_Length/2,Target_Cham_Height/2,Target_Cham_Width/2);
+        = new G4Box("targetInner",Target_Cham_Length/2-Target_Cham_Thickness,Target_Cham_Height/2-Target_Cham_Thickness,Target_Cham_Width/2-Target_Cham_Thickness);
     
     G4Box* targetShell 
-        = new G4Box("targShell",Target_Cham_Length/2+Target_Cham_Thickness,
-        Target_Cham_Height/2+Target_Cham_Thickness,
-        Target_Cham_Width/2+Target_Cham_Thickness);
+        = new G4Box("targShell",Target_Cham_Length/2,
+        Target_Cham_Height/2,
+        Target_Cham_Width/2);
 
     G4VSolid* targetBox
         = new G4SubtractionSolid("targetBox", targetShell, targetInner, 0 , G4ThreeVector(0,0,0));
@@ -519,16 +527,16 @@ G4double doseCupHeight = 10*cm;
         = new G4Box("targOpening",Target_Cham_Thickness,Linac_tunnel_width/2,40*cm/2);
 
     G4Box* doseCupGap 
-        = new G4Box("doseCupGap", Target_Cham_Thickness,doseCupHeight/2,doseCupWidth/2);
+        = new G4Box("doseCupGap", Target_Cham_Thickness/2,doseCupHeight/2,doseCupWidth/4);
 
     G4VSolid* targetMinDose
-        = new G4SubtractionSolid("targetMinDose", targetBox,doseCupGap, 0, G4ThreeVector(Target_Cham_Length/2,0,doseCupLength/2+14*cm));
+        = new G4SubtractionSolid("targetMinDose", targetBox,doseCupGap, 0, G4ThreeVector(Target_Cham_Length/2-Target_Cham_Thickness/2,0,doseCupLength/2+24*cm));
 
     G4VSolid* targetSolid
         = new G4SubtractionSolid("targetFinal", targetBox, targetGap, 0, G4ThreeVector(-Target_Cham_Length/2,0,15*cm));
 
     G4LogicalVolume* targetLogical
-        = new G4LogicalVolume(targetSolid,iron,"targetLogical",
+        = new G4LogicalVolume(targetSolid,aluminum,"targetLogical",
         0,
         0,
         0);
@@ -544,7 +552,7 @@ G4double doseCupHeight = 10*cm;
                             worldLogical,
                             false,
                             0);
-
+/*
     G4Box* doseCupSolid 
         = new G4Box("doseCupBox",doseCupLength/2,doseCupHeight/2,doseCupWidth/2);
     G4LogicalVolume* doseCupLogical
@@ -556,12 +564,79 @@ G4double doseCupHeight = 10*cm;
     G4VPhysicalVolume* doseCupPhysical 
         = new G4PVPlacement(fieldRot6,
         //G4ThreeVector(0,0,0),
-        G4ThreeVector(Target_Cent_Side1+Target_Cham_Width/2-40*cm,0,Target_Cent_Side2-Target_Cham_Length/2+doseCupLength/2+3*cm),
+        G4ThreeVector(Target_Cent_Side1+Target_Cham_Width/2-30*cm,0,Target_Cent_Side2-Target_Cham_Length/2+doseCupLength/2+4.5*cm+Target_Cham_Thickness),
         doseCupLogical,
         "doseCupPhysical",
         worldLogical,
         false,
         0);
+ */
+/*
+    auto fieldRot7 = new G4RotationMatrix();
+    fieldRot7->rotateY(7*deg);
+
+   G4Tubs* doseCupSolid 
+        = new G4Tubs("doseCupBox",0,15*cm,1*mm,0,2*pi);
+    G4LogicalVolume* doseCupLogical
+        = new G4LogicalVolume(doseCupSolid,silicon,"doseCupLogical",
+            0,
+            0,
+            0);
+
+    G4VPhysicalVolume* doseCupPhysical 
+        = new G4PVPlacement(fieldRot7,
+        //G4ThreeVector(0,0,0),
+        G4ThreeVector(Target_Cent_Side1+ 15*cm,0,Target_Cent_Side2),
+        doseCupLogical,
+        "doseCupPhysical",
+        worldLogical,
+        false,
+        0);
+    */
+   G4Box* doseCupSolid 
+        = new G4Box("doseCupBox",doseCupLength/2,doseCupHeight/4,doseCupWidth/8);
+    G4LogicalVolume* doseCupLogical
+        = new G4LogicalVolume(doseCupSolid,carbon13,"doseCupLogical",
+            0,
+            0,
+            0);
+
+    G4VPhysicalVolume* doseCupPhysical 
+        = new G4PVPlacement(fieldRot6,
+        //G4ThreeVector(0,0,0),
+        G4ThreeVector(Target_Cent_Side1+ 22*cm,0,Target_Cent_Side2),
+        doseCupLogical,
+        "doseCupPhysical",
+        worldLogical,
+        false,
+        0);
+
+    G4Box* IronShield_S = new G4Box("IronShieldS",doseCupLength*2,doseCupHeight*4,doseCupWidth*4);
+    G4LogicalVolume* IronShield_L = new G4LogicalVolume(IronShield_S,iron,"IronShieldL",
+                0,
+            0,
+            0);
+    //G4VPhysicalVolume* IronShield_P = new G4PVPlacement(fieldRot6,
+    //                                                    G4ThreeVector(Target_Cent_Side1+5*cm,0,Target_Cent_Side2-Target_Cham_Length/2-doseCupLength-1*cm),
+    //                                                    IronShield_L,
+    //                                                    "IronShieldPhysical",
+    //                                                    worldLogical,
+    //                                                    false,
+    //                                                    0);
+    
+    G4Box* PolyShield_S = new G4Box("PolyShieldS",doseCupLength*18,doseCupHeight*4,doseCupWidth*4);
+    G4LogicalVolume* PolyShield_L = new G4LogicalVolume(PolyShield_S,poly,"PolyShieldL",
+                0,
+            0,
+            0);
+    //G4VPhysicalVolume* PolyShield_P = new G4PVPlacement(fieldRot6,
+    //                                                    G4ThreeVector(Target_Cent_Side1,0,Target_Cent_Side2-Target_Cham_Length/2-doseCupLength*2-1*cm-doseCupLength*16),
+    //                                                    PolyShield_L,
+    //                                                    "PolyShieldPhysical",
+    //                                                    worldLogical,
+    //                                                    false,
+    //                                                    0);
+
     
     // Visualization //
     auto visAttributes = new G4VisAttributes(G4Colour(1.0,1.0,1.0));
@@ -585,6 +660,7 @@ G4double doseCupHeight = 10*cm;
     mag2Logical_1->SetVisAttributes(visAttributes_iron);
     mag2Logical_2->SetVisAttributes(visAttributes_iron);
     recShellLogical->SetVisAttributes(visAttributes_iron);
+    IronShield_L->SetVisAttributes(visAttributes_iron);
     
     auto visAttributes_detect = new G4VisAttributes(G4Colour(0,0.7,0.2,1.0));
     visAttributes_detect->SetForceSolid(1);
@@ -592,11 +668,13 @@ G4double doseCupHeight = 10*cm;
     ERSdetectLogic->SetVisAttributes(visAttributes_detect);
     FaradaydetectLogic->SetVisAttributes(visAttributes_detect);
     
+    
     auto visAttributes_dose = new G4VisAttributes(G4Colour(0.5,0.5,0,0.5));
     visAttributes_dose -> SetForceSolid(1);
     dosimeterLogic->SetVisAttributes(visAttributes_dose);
     ERSdoseLogic->SetVisAttributes(visAttributes_dose);
     FaradayDoseLogic->SetVisAttributes(visAttributes_dose);
+    PolyShield_L->SetVisAttributes(visAttributes_dose);
 
     auto visAttributes_wire = new G4VisAttributes(G4Colour(0.,1.,0.));
     visAttributes_wire ->SetForceWireframe(1);
@@ -660,8 +738,9 @@ G4String Dosimeter_SDname = "/dosimeter1";
 
 // cross-section biasing for graphite components -------------------------------
 
-    XSBiasing* alpha_rxs = 
-        new XSBiasing("alpha");  // select the particle we want to bias
+    MultiXSBiasing* alpha_rxs = new MultiXSBiasing();
+    alpha_rxs->AddParticle("alpha");
+    //XSBiasing* alpha_rxs = new XSBiasing("alpha");  // select the particle we want to bias
 
     // get appropriate volume for biasing
     G4LogicalVolume* logic_dosecup = G4LogicalVolumeStore::GetInstance()->GetVolume("doseCupLogical");
@@ -669,13 +748,13 @@ G4String Dosimeter_SDname = "/dosimeter1";
     G4LogicalVolume* logic_linac = G4LogicalVolumeStore::GetInstance()->GetVolume("linacLogical");
 
     alpha_rxs->AttachTo(logic_dosecup); // apply biasing
-    alpha_rxs->AttachTo(logic_ers);
-    alpha_rxs->AttachTo(logic_linac);
+    //alpha_rxs->AttachTo(logic_ers);
+    //alpha_rxs->AttachTo(logic_linac);
 
     G4cout << " Attaching biasing operator " << alpha_rxs->GetName()
-         << " to logical volumes " << logic_dosecup->GetName() << G4endl <<
-         logic_ers->GetName() << G4endl << logic_linac->GetName()
-         << G4endl; // prints out what biasing we've done
+         << " to logical volumes " << logic_dosecup->GetName() << G4endl;
+        // logic_ers->GetName() << G4endl << logic_linac->GetName()
+        // << G4endl; // prints out what biasing we've done
 }
 
 G4Material *geometryConstruction::IsoCarbon13() {
@@ -739,3 +818,27 @@ G4Material *geometryConstruction::EJ309()
     
     return EJ309;
 }
+
+G4Material *geometryConstruction::dopeSilicon(){
+    //natural abundance Silicon, with carbon, oxygen, and Boron dopant
+    G4double a;
+    G4double z;
+    G4double n;
+    G4double density = 2.329*g/cm3;
+    G4int nComp =4;
+  
+    G4Element *Silicon = new G4Element("Silicon", "Si", z=14., a = 28.085 *g/mole);
+    G4Material *DopedSilicon = new G4Material("DopedSi", density, nComp);
+    DopedSilicon -> AddElement(Silicon, 99.99797 *perCent);
+  
+    G4Element *Oxygen = new G4Element("Oxygen", "O", z =8., a = 15.999 *g/mole);
+    G4Element *Carbon = new G4Element("Carbon", "C", z =6., a = 12.0116 *g/mole);
+    G4Element *Boron = new G4Element("Boron", "B", z =5., a = 10.811 *g/mole);
+    G4Element *Phosphorus = new G4Element("Phosphorus", "P", z =15., a =30.974 *g/mole);
+  
+    DopedSilicon -> AddElement(Oxygen, 0.002 *perCent);
+    DopedSilicon -> AddElement(Carbon, 2E-5 *perCent);
+    DopedSilicon -> AddElement(Boron, 1.35E-6 *perCent);
+  
+    return DopedSilicon;
+  }

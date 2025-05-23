@@ -16,6 +16,9 @@ else()
 endif()
 
 #----------------------------------------------------------------------------
+# Fix some conflicting file path issues
+list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu")
+#----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
@@ -34,6 +37,10 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(beamTest beamTest.cc ${sources} ${headers})
 target_link_libraries(beamTest ${Geant4_LIBRARIES})
+
+#----------------------------------------------------------------------------
+# Add debugging information for testing for memory leaks
+#set(CMAKE_BUILD_TYPE Debug)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

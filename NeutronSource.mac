@@ -46,12 +46,12 @@
 /score/close
 
 #/vis/filtering/trajectories/particleFilter-0/reset
-/score/fill1D 0 detectorLogical nFlux
-/score/fill1D 1 ERSdetectLogic nFlux
-/score/fill1D 2 FaradaydetectLogic nFlux
+#/score/fill1D 0 detectorLogical nFlux
+#/score/fill1D 1 ERSdetectLogic nFlux
+#/score/fill1D 2 FaradaydetectLogic nFlux
 
-#/run/beamOn 100000
+/run/beamOn 100000
 #/run/beamOn 10000
 #/run/beamOn 10
 
-/score/dumpQuantityToFile bxMesh nFlux MeshDumpTestNeut.csv
+#/score/dumpQuantityToFile bxMesh nFlux MeshDumpTestNeut.csv

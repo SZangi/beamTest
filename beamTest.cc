@@ -31,6 +31,8 @@ field strength into a target
 #include "G4AnalysisManager.hh"
 #include "G4TScoreHistFiller.hh"
 
+#include "G4SystemOfUnits.hh"
+
 #include <iostream>
 
 // User Header Files
@@ -42,12 +44,13 @@ field strength into a target
 #include "ActionInitialization.hh"
 
 #include "FancyNeutronPhysics.hh"
+#include "G4OpticalPhysics.hh"
 
 int main(int argc, char *argv[])
 {
   // Create a runManager to handle the flow of operations in the program.  
   G4RunManager* runManager =  G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
-  // G4RunManager* runManager = new G4RunManager;
+   //G4RunManager* runManager = new G4RunManager;
 
   // Activate command-based scorer
   G4ScoringManager::GetScoringManager();
@@ -62,11 +65,13 @@ int main(int argc, char *argv[])
   // runManager to initialize them for use
   runManager -> SetUserInitialization(new geometryConstruction);
   // new physics list with individual lists registered for different processes
-  QGSP_BIC_AllHP* physicsList = new QGSP_BIC_AllHP(0); //QBBC is the recommended list for thin target high precision modelling
+  //QBBC* physicsList = new QBBC(0); //QBBC is the recommended list for thin target high precision modelling
+    QGSP_BIC_AllHP* physicsList = new QGSP_BIC_AllHP(0);
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     G4GenericBiasingPhysics* biasingPhysics = new G4GenericBiasingPhysics();
     biasingPhysics -> Bias("alpha");
     physicsList->RegisterPhysics(biasingPhysics);
+    physicsList->SetCutValue(1*mm,"e-");
     physicsList->RegisterPhysics(new FancyNeutronPhysics());
 
   runManager -> SetUserInitialization(physicsList);

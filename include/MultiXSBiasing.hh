@@ -23,49 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file GB01/include/MultiXSBiasing.hh
+/// \brief Definition of the MultiXSBiasing class
 //
-//---------------------------------------------------------------
+//-----------------------------------------------------------------
 //
-// XSBiasing: Class definition taken from the GB01 extended
-//            example of cross-section biasing.
+// MultiXSBiasing
 //
 // Class Description:
 //        A G4VBiasingOperator concrete implementation example to
-//    illustrate how to bias physics processes cross-section for
-//    one particle type.
-//        The G4VBiasingOperation G4BOptnChangeCrossSection is
-//    selected by this operator, and is sent to each process
-//    calling the operator.
-//        A simple constant bias to the cross-section is applied,
-//    but more sophisticated changes can be applied.
+//    illustrate how an operator can make use of an other operator.
+//        In the present case, the GB01BOptrChangeCrossSection
+//    operator, that is made to bias processes of one particle
+//    type is instancied several times, one for each particle type
+//    to bias.
 //
-//---------------------------------------------------------------
+//-----------------------------------------------------------------
 //
 
-#ifndef XSBiasing_hh
-#define XSBiasing_hh 1
+#ifndef MultiXSBiasing_hh
+#define MultiXSBiasing_hh 1
 
 #include "G4VBiasingOperator.hh"
-class G4BOptnChangeCrossSection;
+class XSBiasing;
 class G4ParticleDefinition;
+
 #include <map>
 
-class XSBiasing : public G4VBiasingOperator {
+class MultiXSBiasing : public G4VBiasingOperator {
 public:
-  // ------------------------------------------------------------
-  // -- Constructor: takes the name of the particle type to bias:
-  // ------------------------------------------------------------
-  XSBiasing(G4String particleToBias, G4String name = "ChangeXS");
-  virtual ~XSBiasing();
+  MultiXSBiasing();
+  virtual ~MultiXSBiasing() {}
   
-  // -- method called at beginning of run:
-  virtual void StartRun();
+  // ---------------------------------
+  // -- Method specific to this class:
+  // ---------------------------------
+  // -- Each particle type for which its name is passed will be biased; *provided*
+  // -- that the proper calls to biasingPhysics->Bias(particleName) have been done
+  // -- in the main program.
+  void AddParticle( G4String particleName );
+  
   
 private:
   // -----------------------------
   // -- Mandatory from base class:
   // -----------------------------
-  // -- This method returns the biasing operation that will bias the physics process occurence.
+  // -- This method returns a biasing operation that will bias the physics process occurence:
   virtual G4VBiasingOperation*
   ProposeOccurenceBiasingOperation(const G4Track*                            track,
                                    const G4BiasingProcessInterface* callingProcess);
@@ -77,9 +80,10 @@ private:
   ProposeNonPhysicsBiasingOperation(const G4Track*, const G4BiasingProcessInterface*)
   {return 0;}
 
+  
 private:
-  // -- ("using" is avoid compiler complaining against (false) method shadowing.)
-  using G4VBiasingOperator::OperationApplied;
+  // -- ("using" is to avoid compiler complaining against (false) method shadowing.)
+    using G4VBiasingOperator::OperationApplied;
 
   // -- Optionnal base class method implementation.
   // -- This method is called to inform the operator that a proposed operation has been applied.
@@ -91,17 +95,20 @@ private:
                                  G4double                         weightForOccurenceInteraction,
                                  G4VBiasingOperation*                finalStateOperationApplied, 
                                  const G4VParticleChange*                particleChangeProduced );
+
+public:
+  // -- Optionnal base class method. It is called at the time a tracking of a particle starts:
+  void StartTracking( const G4Track* track );
   
 private:
-  // -- List of associations between processes and biasing operations:
-  std::map< const G4BiasingProcessInterface*, 
-            G4BOptnChangeCrossSection*       > fChangeCrossSectionOperations;
-  G4bool                                  fSetup;
-  const G4ParticleDefinition*    fParticleToBias;
-  G4double analogInteractionLength;
-  G4double analogXS;
-  G4double XStransformation;
+  // -- List of associations between particle types and biasing operators:
+  std::map < const G4ParticleDefinition*, 
+             XSBiasing* >    fBOptrForParticle;
+  std::vector < const G4ParticleDefinition* >   fParticlesToBias;
+  XSBiasing*                  fCurrentOperator;
 
+  // -- count number of biased interations for current track:
+  G4int fnInteractions;
 };
 
 #endif

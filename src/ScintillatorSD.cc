@@ -28,7 +28,7 @@ void ScintillatorSD::Initialize(G4HCofThisEvent* hce)
 G4bool ScintillatorSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
     G4double edep = aStep->GetTotalEnergyDeposit();
-
+    G4double weight = aStep->GetTrack()->GetWeight();
     //if (edep == 0) return false;
     auto newHit = new ScintillatorHit();
 

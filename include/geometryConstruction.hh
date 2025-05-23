@@ -25,6 +25,7 @@ public:
   G4Material *IsoCarbon13();
   G4Material *mixScintillator();
   G4Material *EJ309();
+  G4Material *dopeSilicon();
 
   G4LogicalVolume* GetDetector(G4int i) const {return Detectors[i];};
 

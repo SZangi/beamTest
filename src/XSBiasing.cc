@@ -63,6 +63,8 @@ XSBiasing::XSBiasing(G4String particleName,
                   JustWarning,
                   ed);
     }
+  
+  XStransformation = 1000000.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -96,11 +98,13 @@ void XSBiasing::StartRun()
             {
               const G4BiasingProcessInterface* wrapperProcess =
                 (sharedData->GetPhysicsBiasingProcessInterfaces())[i];
-              G4String operationName = "XSchange-" + 
-                wrapperProcess->GetWrappedProcess()->GetProcessName();
-              G4cout << operationName << G4endl;
-              fChangeCrossSectionOperations[wrapperProcess] = 
-                new G4BOptnChangeCrossSection(operationName);
+                //if(wrapperProcess->GetWrappedProcess()->GetProcessName()=="alphaInelastic"){
+                  G4String operationName = "XSchange-" + 
+                    wrapperProcess->GetWrappedProcess()->GetProcessName();
+                  G4cout << operationName << G4endl;
+                  fChangeCrossSectionOperations[wrapperProcess] = 
+                  new G4BOptnChangeCrossSection(operationName);
+                //}
               
             }
         }
@@ -115,21 +119,10 @@ XSBiasing::ProposeOccurenceBiasingOperation(const G4Track*            track,
                                                               const G4BiasingProcessInterface*
                                                                                callingProcess)
 {
-
-  // -----------------------------------------------------
+    // -----------------------------------------------------
   // -- Check if current particle type is the one to bias:
   // -----------------------------------------------------
   if ( track->GetDefinition() != fParticleToBias ) return 0;
-  
-  // ---------------------------------------------------------------------
-  // -- select and setup the biasing operation for current callingProcess:
-  // ---------------------------------------------------------------------
-  // -- Check if the analog cross-section well defined : for example, the conversion
-  // -- process for a gamma below e+e- creation threshold has an DBL_MAX interaction
-  // -- length. Nothing is done in this case (ie, let analog process to deal with the case)
-  G4double analogInteractionLength =  
-    callingProcess->GetWrappedProcess()->GetCurrentInteractionLength();
-  if ( analogInteractionLength > DBL_MAX/10. ) return 0;
 
   // -----------------------------------------------------------
   // -- Check if current interaction type is one we want to bias
@@ -137,14 +130,24 @@ XSBiasing::ProposeOccurenceBiasingOperation(const G4Track*            track,
   // -- set up but so far it is just hard-coded here.
   // -----------------------------------------------------------
   if (callingProcess->GetWrappedProcess()->GetProcessName() != "alphaInelastic") return 0;
+  
+  // ---------------------------------------------------------------------
+  // -- select and setup the biasing operation for current callingProcess:
+  // ---------------------------------------------------------------------
+  // -- Check if the analog cross-section well defined : for example, the conversion
+  // -- process for a gamma below e+e- creation threshold has an DBL_MAX interaction
+  // -- length. Nothing is done in this case (ie, let analog process to deal with the case)
+  analogInteractionLength =  
+    callingProcess->GetWrappedProcess()->GetCurrentInteractionLength();
+  if ( analogInteractionLength > DBL_MAX/10. ) return 0;
 
   // -- Analog cross-section is well-defined:
-  G4double analogXS = 1./analogInteractionLength;
+  analogXS = 1./analogInteractionLength;
 
   // -- Choose a constant cross-section bias. But at this level, this factor can be made
   // -- direction dependent, like in the exponential transform MCNP case, or it
   // -- can be chosen differently, depending on the process, etc.
-  G4double XStransformation = 1000000.0 ;
+  
   
   // -- fetch the operation associated to this callingProcess:
   G4BOptnChangeCrossSection*   operation = fChangeCrossSectionOperations[callingProcess];
@@ -164,7 +167,7 @@ XSBiasing::ProposeOccurenceBiasingOperation(const G4Track*            track,
   // -- we update the number of interaction length instead of resampling.
   if ( previousOperation == 0 )
     {
-      operation->SetBiasedCrossSection( XStransformation * analogXS );
+      operation->SetBiasedCrossSection( XStransformation *  analogXS);
       operation->Sample();
     }
   else

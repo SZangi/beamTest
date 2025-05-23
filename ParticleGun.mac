@@ -10,6 +10,7 @@
 #
 /run/initialize
 /run/verbose 1
+#/tracking/verbose 1
 #
 /gps/verbose 0
 #
@@ -32,13 +33,13 @@
 
 # particle definition
 /gps/particle alpha 
-/beamTest/field/field1/value -1.77 kilogauss
-/beamTest/field/field2/value -2.0 kilogauss
+/beamTest/field/field1/value -2.24 kilogauss #-1.77 kilogauss #-2.07 kilogauss #-1.93 kilogauss #
+/beamTest/field/field2/value -2.4 kilogauss #-1.85 kilogauss #-2.2 kilogauss #-2.0 kilogauss #
 #
 ## set the energy definition
 /gps/ene/type Gauss
-/gps/ene/mono 2.2 MeV
-/gps/ene/sigma 0.0731 MeV 
+/gps/ene/mono 3.5 MeV
+/gps/ene/sigma 0.07 MeV 
 #
 
 /score/create/realWorldLogVol detectorLogical
@@ -61,34 +62,32 @@
 /score/filter/particle aFilter alpha
 /score/close
 
-#/score/create/cylinderMesh cylMesh
-#/score/mesh/cylinderSize 40 10 cm
-#/score/mesh/nBin 3 2 20
-#/score/mesh/translate/xyz 223 0 -76 cm
-#/score/mesh/rotate/rotateX 90 deg
-#/score/quantity/volumeFlux nFlux
-#/score/filter/particle nFilter neutron
-#/score/close
+/score/create/probe Probe1 2.5 cm
+/score/probe/locate 230.5 0 16.6 cm
+/score/quantity/cellFlux nFlux
+/score/filter/particle nFilter neutron
+/score/close
 
 /score/create/boxMesh bxMesh
-/score/mesh/boxSize 4.35 1 2.25 m
-/score/mesh/nBin 100 1 50
+/score/mesh/boxSize 4.35 0.1 2.25 m
+/score/mesh/nBin 200 1 100
 /score/mesh/translate/xyz 0 0 100 cm
 /score/quantity/cellFlux nFlux
 /score/filter/particle nFliter neutron
 /score/close
 
+#135,77
 
 
-
-#/analysis/h1/create nFlux detect_nFlux 100 0.01 5. MeV ! linear
-/score/fill1D 0 detectorLogical nFlux
-/score/fill1D 1 ERSdetectLogic nFlux
-/score/fill1D 2 FaradaydetectLogic nFlux
-/analysis/openFile WriteT_Tuning4.root
+#/score/fill1D 0 detectorLogical nFlux
+#/score/fill1D 1 ERSdetectLogic nFlux
+#/score/fill1D 2 FaradaydetectLogic nFlux
+/score/fill1D 0 Probe1 nFlux
+#/analysis/h1/create nFlux probe_nFlux 100 0.01 7. MeV ! linear
+/analysis/openFile Only_DoseCup_Box1.root
 
 /run/beamOn 1000000
-#/run/beamOn 1000
+#/run/beamOn 10000
 #/run/beamOn 10
 
 #/control/loop drawBox.mac iColumn 0 90 10
@@ -99,7 +98,8 @@
 
 /analysis/write
 /analysis/closeFile
-/score/dumpQuantityToFile bxMesh nFlux MeshDump_Tuning4.csv
+
+/score/dumpQuantityToFile bxMesh nFlux MeshDump_Raw_35.csv
 #/score/dumpQuantityToFile doseCupLogical volFlux alphas_Tuning2.csv
 
 #/analysis/openFile WriteT_run3.root
