@@ -22,9 +22,9 @@ runAction::runAction()
     analysisManager->CreateH1("DosimeternFlux3", "Neutron Flux in Dose Meter", N_Energies);
 
     G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-    accumulableManager->RegisterAccumulable(Faraday_dose);
-    accumulableManager->RegisterAccumulable(ERS_dose);
-    accumulableManager->RegisterAccumulable(Corrector_dose);
+    accumulableManager->Register(Faraday_dose);
+    accumulableManager->Register(ERS_dose);
+    accumulableManager->Register(Corrector_dose);
     
     }
 
